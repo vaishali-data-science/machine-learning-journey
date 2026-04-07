@@ -1,0 +1,37 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+from sklearn.preprocessing import StandardScaler
+from sklearn.neighbors import KNeighborsClassifier
+
+df = pd.read_csv('train.csv')
+
+# Select columns
+df = df[['Survived','Pclass','Sex','Age','SibSp','Parch','Fare','Embarked']]
+
+# Fill missing values (correct way)
+df['Age'] = df['Age'].fillna(df['Age'].mean())
+df['Embarked'] = df['Embarked'].fillna(df['Embarked'].mode()[0])
+
+# Convert text to numbers
+df['Sex'] = df['Sex'].map({'male':0,'female':1})
+df['Embarked'] = df['Embarked'].map({'S':0,'C':1,'Q':2})
+
+print(df.isnull().sum())  # MUST be all 0
+
+X = df.drop('Survived', axis=1)
+y = df['Survived']
+
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+scalar = StandardScaler()
+X_train = scalar.fit_transform(X_train)
+X_test = scalar.transform(X_test)
+
+model = KNeighborsClassifier(n_neighbors=5)
+model.fit(X_train, y_train)
+
+y_pred = model.predict(X_test)
+
+print('Model Accuracy:', accuracy_score(y_test, y_pred))
